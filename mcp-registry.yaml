@@ -1,0 +1,67 @@
+# Analysis
+
+**Language/Runtime**:  
+- Node.js (TypeScript). Detected both from `type: "module"` and TypeScript build script.
+
+**Package Availability**:  
+- Not published to npm; `"private": true` in `package.json`.
+
+**Dependencies**:  
+- MCP SDK (`@modelcontextprotocol/sdk`)
+- dotenv  
+- sqlite3
+
+**Build requirements**:  
+- Must build TypeScript (`tsc`) to output into `build/index.js`  
+- Entry: `build/index.js`
+
+**Configuration Needs**:  
+- From README: Requires environment variable `CHAT_DB_PATH`, which should point to the SQLite chat database created by following instructions in `chatbot/README.md`.
+
+**Assumptions**:
+- Build chain is required each time (no guarantee of built JS output).
+- Main entrypoint is `build/index.js`.
+- `CHAT_DB_PATH` is required and must be supplied by the user in the config schema.
+- Project is local (not published to npm).
+
+# `mcp-registry.yaml`
+
+```yaml
+config_schema:
+  type: object
+  required:
+    - chat_db_path
+  properties:
+    chat_db_path:
+      type: string
+      description: Absolute path to the chat SQLite database file (e.g., chatbot/data/chat.db)
+
+server_name: mcp-server-chatsum
+command: npx
+args:
+  - -y
+  - npm
+  - install
+  - '&&'
+  - npm
+  - run
+  - build
+  - '&&'
+  - node
+  - build/index.js
+env:
+  - name: CHAT_DB_PATH
+    value: config.chat_db_path
+
+description: MCP Server that summarizes your chat messages. Requires a SQLite database file containing your chat data via the CHAT_DB_PATH environment variable.
+owner: idoubi
+license: MIT
+package: mcp-server-chatsum
+vendor: idoubi
+```
+
+# Usage Notes
+- You **must** build the server before running; this config will do so automatically with `npm run build`.
+- Ensure `chat_db_path` points to your actual chat SQLite database (set up via the included chatbot utility).
+- This is a local, unpublished project; `npx` is used to ensure cross-platform compatibility and to handle the build chain.
+- The server entrypoint is `build/index.js` after compilation.
